@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stake VIP Rank Calculator</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap");
+
+      :root {
+        --primary-color: #1a1a1a;
+        --secondary-color: #2d2d2d;
+        --accent-color: #3b82f6;
+        --background-color: #0f0f0f;
+        --card-bg: #1a1a1a;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --border-color: #2a2a2a;
+        --input-bg: #242424;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+      }
+
+      :root[data-theme="light"] {
+        --primary-color: #ffffff;
+        --secondary-color: #f3f4f6;
+        --accent-color: #3b82f6;
+        --background-color: #f9fafb;
+        --card-bg: #ffffff;
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --border-color: #e5e7eb;
+        --input-bg: #f3f4f6;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      body {
+        background-color: var(--background-color);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        width: 100%;
+        overflow-x: hidden;
+      }
+
+      /* Navigation */
+      .navbar {
+        background: rgba(0, 0, 0, 0.9);
+        padding: 1rem 0;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 15px var(--shadow-color);
+      }
+
+      .navbar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center; /* Keep menu centered */
+        align-items: center;
+        padding: 0 1rem;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--accent-color);
+        margin-right: 1.5rem; /* Space for modern spacing */
+        transition: color 0.3s ease;
+      }
+
+      .logo:hover {
+        color: #2563eb; /* Slightly darker blue on hover */
+      }
+
+      .nav-menu {
+        display: flex;
+        gap: 1.2rem; /* Modern, tight spacing */
+        align-items: center;
+      }
+
+      .nav-menu a {
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 500;
+        padding: 0.6rem 1rem; /* Slightly larger padding for modern look */
+        border-radius: 8px; /* Rounded corners for modern design */
+        position: relative; /* For underline effect */
+        transition: color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+      }
+
+      .nav-menu a:hover,
+      .nav-menu a.active {
+        color: var(--accent-color);
+        background: rgba(255, 255, 255, 0.05); /* Subtle hover background */
+        transform: translateY(-2px); /* Lift effect on hover */
+      }
+
+      .nav-menu a:hover::after,
+      .nav-menu a.active::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background-color: var(--accent-color);
+        transition: opacity 0.3s ease;
+        opacity: 1;
+      }
+
+      .nav-menu a::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background-color: var(--accent-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 8px var(--shadow-color);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .theme-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow-color);
+      }
+
+      .theme-toggle i {
+        font-size: 1.2rem;
+        color: var(--text-primary);
+      }
+
+      /* Rank Card */
+      .rank-card {
+        background: var(--card-bg);
+        width: 100%;
+        max-width: 1000px;
+        min-height: 600px;
+        border-radius: 30px;
+        box-shadow: 0 20px 40px var(--shadow-color);
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        margin: 0 auto;
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+        width: 100%;
+      }
+
+      .header-logo {
+        margin-bottom: 1.5rem;
+      }
+
+      .header-logo img {
+        max-width: 180px;
+        width: 100%;
+        height: auto;
+        filter: brightness(0.2);
+      }
+
+      :root[data-theme="dark"] .header-logo img {
+        filter: brightness(1);
+      }
+
+      .header h1 {
+        font-size: clamp(1.5rem, 2vw, 1.8rem);
+        color: var(--text-primary);
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .header h2 {
+        color: var(--text-primary);
+        font-size: clamp(2rem, 2.5vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .header h2 i {
+        color: var(--accent-color);
+        margin-right: 15px;
+      }
+
+      .description {
+        color: var(--text-secondary);
+        font-size: clamp(1rem, 1.1vw, 1.1rem);
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto 3rem auto;
+        line-height: 1.8;
+      }
+
+      /* Form Container */
+      .form-container {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .input-group {
+        margin-bottom: 2rem;
+      }
+
+      .input-group label {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        font-size: clamp(0.9375rem, 1vw, 1.1rem);
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        background: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 16px;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+      }
+
+      /* Progress Bar */
+      .progress-input-wrapper {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 0.5rem;
+        width: 100%;
+      }
+
+      .progress-bar-container {
+        flex: 1;
+        height: 16px;
+        background: var(--input-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid var(--border-color); /* Thicker border to match inputs */
+        cursor: pointer;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0%;
+        background: var(--accent-color);
+        border-radius: 8px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-input-wrapper input {
+        width: 120px; /* Increased width to fit text better */
+        padding: 0.6rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem; /* Reduced font size for better fit */
+      }
+
+      .progress-input-wrapper input::-webkit-outer-spin-button,
+      .progress-input-wrapper input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .percentage-symbol {
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.9rem; /* Reduced font size to match input */
+      }
+
+      /* Calculate Button */
+      .calculate-btn {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        background: var(--input-bg); /* Match input background */
+        border: 2px solid var(--accent-color); /* Blue border to match inputs */
+        border-radius: 12px;
+        font-size: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+      }
+
+      .calculate-btn:hover {
+        background: rgba(59, 130, 246, 0.1); /* Subtle hover background */
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+      }
+
+      /* Result Container */
+      .result-container {
+        display: none;
+        background: rgba(59, 130, 246, 0.1);
+        padding: 2rem;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        animation: fadeIn 0.3s ease;
+      }
+
+      .result-container.show {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-header {
+        font-size: clamp(1.125rem, 1.3vw, 1.3rem);
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .result-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .result-details p {
+        color: var(--text-secondary);
+        font-size: clamp(1rem, 1.1vw, 1.1rem);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .highlight {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .result {
+        color: var(--text-primary);
+        font-size: clamp(1.125rem, 1.2vw, 1.2rem);
+        font-weight: 600;
+      }
+
+      /* Partners Section */
+      .logos-container {
+        margin-top: 4rem;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.02);
+        padding: 2rem;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+      }
+
+      .logos-container h4 {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        font-weight: 500;
+      }
+
+      .logos {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .logo-link {
+        opacity: 0.8;
+        transition: all 0.3s ease;
+      }
+
+      .logo-link:hover {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+
+      /* Footer */
+      .footer {
+        margin-top: 2rem;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.02);
+        padding: 1.5rem;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+      }
+
+      .footer-section h4 {
+        color: var(--text-secondary);
+        font-size: clamp(1rem, 1.1vw, 1.1rem);
+        margin-bottom: 1rem;
+        font-weight: 500;
+      }
+
+      .footer-section p {
+        color: var(--text-secondary);
+        font-size: clamp(0.875rem, 0.9vw, 0.9rem);
+        margin-bottom: 1rem;
+      }
+
+      .footer-email {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: var(--input-bg);
+        transition: all 0.3s ease;
+      }
+
+      .footer-email:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .footer-email i {
+        font-size: 1rem;
+      }
+
+      /* Responsive */
+      @media screen and (max-width: 1100px) {
+        .rank-card {
+          max-width: 90%;
+          padding: 1.5rem;
+        }
+      }
+
+      @media screen and (max-width: 768px) {
+        body {
+          padding: 0.5rem;
+        }
+
+        .rank-card {
+          padding: 1rem;
+          margin: 0;
+          border-radius: 15px;
+          min-height: auto;
+        }
+
+        .header-logo img {
+          max-width: 140px;
+        }
+
+        .header h1 {
+          font-size: clamp(1.25rem, 1.5vw, 1.5rem);
+        }
+
+        .description {
+          font-size: clamp(0.9375rem, 1vw, 0.95rem);
+          padding: 0;
+          margin-bottom: 2rem;
+        }
+
+        .logos {
+          gap: 2rem;
+        }
+
+        .logo-link img {
+          max-width: 120px;
+          height: auto;
+        }
+
+        .navbar-container {
+          padding: 0 0.8rem;
+        }
+
+        .nav-menu {
+          gap: 0.8rem; /* Tighter spacing on mobile */
+        }
+
+        .nav-menu a {
+          padding: 0.4rem 0.8rem;
+          font-size: 1rem;
+        }
+
+        .progress-input-wrapper input {
+          width: 100px; /* Slightly smaller on mobile */
+          font-size: 0.8rem; /* Smaller font on mobile */
+        }
+
+        .percentage-symbol {
+          font-size: 0.8rem; /* Smaller font on mobile */
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        .rank-card {
+          border-radius: 10px;
+        }
+
+        .form-container {
+          padding: 0;
+        }
+
+        .nav-menu {
+          gap: 0.6rem; /* Even tighter on very small screens */
+        }
+
+        .nav-menu a {
+          padding: 0.3rem 0.6rem;
+          font-size: 0.9rem;
+        }
+
+        .progress-input-wrapper input {
+          width: 90px; /* Even smaller on very small screens */
+          font-size: 0.7rem; /* Even smaller font on very small screens */
+        }
+
+        .percentage-symbol {
+          font-size: 0.7rem; /* Even smaller font on very small screens */
+        }
+      }
+
+      /* Safari, Firefox, IE/Edge specific styles (unchanged) */
+      @supports (-webkit-touch-callout: none) {
+        .rank-card {
+          -webkit-transform: translateZ(0);
+        }
+
+        .header-logo img {
+          -webkit-backface-visibility: hidden;
+        }
+      }
+
+      @-moz-document url-prefix() {
+        .rank-card {
+          transform: translateZ(0);
+        }
+      }
+
+      @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+        .rank-card {
+          width: 90%;
+        }
+
+        .header-logo img {
+          width: 180px;
+        }
+      }
+
+      /* Input validation and accessibility (unchanged) */
+      input:invalid {
+        border-color: #ef4444;
+      }
+
+      input:disabled,
+      select:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+
+      input:hover,
+      select:hover {
+        border-color: var(--accent-color);
+      }
+
+      /* Theme transition */
+      .theme-transition {
+        transition: all 0.3s ease;
+      }
+
+      /* Welcome Promo (unchanged) */
+      .welcome-promo img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="navbar-container">
+        <div class="logo">Stake VIP</div>
+        <div class="nav-menu">
+          <a href="#home" class="active">Home</a>
+          <a href="#calculator" class="active">Calculator</a>
+          <a href="#about">About</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="rank-card">
+      <div class="header">
+        <div class="header-logo">
+          <img
+            src="https://via.placeholder.com/180x80?text=Stake+VIP+Logo"
+            alt="Stake VIP Logo"
+          />
+        </div>
+        <h1>Stake VIP Rank Calculator</h1>
+        <h2><i class="fas fa-star"></i> Calculate Your VIP Progress</h2>
+      </div>
+      <p class="description">
+        To calculate how much wager you need to advance to your next VIP level,
+        select your rank from the dropdown list and type your percentage VIP progress.
+      </p>
+      <div class="form-container">
+        <div class="input-group">
+          <label for="vipProgress">VIP Progress (%)</label>
+          <div class="progress-input-wrapper">
+            <input
+              type="number"
+              id="vipProgress"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="Progress %"
+            />
+            <span class="percentage-symbol">%</span>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="current_rank">Current Rank</label>
+          <select id="current_rank">
+            <option value="Non VIP">Non VIP</option>
+            <option value="Bronze">Bronze</option>
+            <option value="Silver">Silver</option>
+            <option value="Gold">Gold</option>
+            <option value="Platinum I">Platinum I</option>
+            <option value="Platinum II">Platinum II</option>
+            <option value="Platinum III">Platinum III</option>
+            <option value="Platinum IV">Platinum IV</option>
+            <option value="Platinum V">Platinum V</option>
+            <option value="Platinum VI">Platinum VI</option>
+            <option value="Diamond I">Diamond I</option>
+            <option value="Diamond II">Diamond II</option>
+            <option value="Diamond III">Diamond III</option>
+            <option value="Diamond IV">Diamond IV</option>
+            <option value="Diamond V">Diamond V</option>
+            <option value="Obsidian">Obsidian</option>
+          </select>
+        </div>
+        <button class="calculate-btn" onclick="calculate()">Calculate</button>
+        <div class="result-container" id="result"></div>
+      </div>
+
+      <div class="logos-container">
+        <h4>Our Partners</h4>
+        <div class="logos">
+          <a href="#" class="logo-link">
+            <img
+              src="https://via.placeholder.com/150x50?text=Shuffle+Partner+Logo"
+              alt="Shuffle Partner Logo"
+            />
+          </a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-section">
+          <h4>Advertising & Partnerships</h4>
+          <p>For business inquiries and collaboration opportunities</p>
+          <a href="mailto:partners@stakecalc.com" class="footer-email">
+            <i class="fas fa-envelope"></i> partners@stakecalc.com
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-toggle" id="themeToggle">
+      <i class="fas fa-moon"></i>
+    </div>
+
+    <script>
+      // Calculate VIP progress and update the result container
+      function calculate() {
+        const vipProgress =
+          parseFloat(document.getElementById("vipProgress").value) || 0;
+        const currentRank = document.getElementById("current_rank").value;
+        const resultContainer = document.querySelector(".result-container");
+        const resultElement = document.getElementById("result");
+
+        if (vipProgress === 0) {
+          resultContainer.classList.remove("show");
+          return;
+        }
+
+        if (vipProgress > 100) {
+          document.getElementById("vipProgress").value = 100;
+          return calculate();
+        }
+
+        // Trigger confetti for any progress calculation
+        triggerConfetti();
+
+        if (vipProgress === 100) {
+          const isExactly100 =
+            document.getElementById("vipProgress").value === "100";
+          resultElement.textContent =
+            "Congratulations! You've reached 100% progress! 🎉";
+          resultContainer.classList.add("show");
+          if (isExactly100) {
+            triggerCelebration();
+          }
+          return;
+        }
+
+        const ranks = {
+          "Non VIP": 0,
+          Bronze: 10000,
+          Silver: 50000,
+          Gold: 100000,
+          "Platinum I": 250000,
+          "Platinum II": 500000,
+          "Platinum III": 1000000,
+          "Platinum IV": 2500000,
+          "Platinum V": 5000000,
+          "Platinum VI": 10000000,
+          "Diamond I": 25000000,
+          "Diamond II": 50000000,
+          "Diamond III": 100000000,
+          "Diamond IV": 250000000,
+          "Diamond V": 500000000,
+          Obsidian: 1000000000,
+        };
+
+        const currentAmount = ranks[currentRank];
+        const nextRank =
+          Object.keys(ranks)[Object.values(ranks).indexOf(currentAmount) + 1];
+
+        if (!nextRank) {
+          resultElement.innerHTML = `
+            <div class="result-header">🎉 Maximum Rank Achieved!</div>
+            <div class="result-details">
+              <p>You have reached the highest rank: <span class="highlight">Obsidian</span></p>
+              <p>Total Wager Required: <span class="highlight">$${new Intl.NumberFormat(
+                "en-US"
+              ).format(ranks.Obsidian)}</span></p>
+            </div>
+          `;
+          resultContainer.classList.add("show");
+          return;
+        }
+
+        const neededAmount = ranks[nextRank] - currentAmount;
+        const remainingAmount = Math.max(
+          0,
+          neededAmount - (neededAmount * (vipProgress / 100))
+        );
+        const completedPercentage = (
+          ((neededAmount - remainingAmount) / neededAmount) *
+          100
+        ).toFixed(2);
+
+        resultElement.innerHTML = `
+          <div class="result-header">Progress Details</div>
+          <div class="result-details">
+            <p>Current Rank: <span class="highlight">${currentRank}</span></p>
+            <p>Next Rank: <span class="highlight">${nextRank}</span></p>
+            <p>Progress: <span class="highlight">${completedPercentage}%</span></p>
+            <p>Remaining Wager: <span class="highlight">$${new Intl.NumberFormat(
+              "en-US"
+            ).format(Math.round(remainingAmount))}</span></p>
+            <p>Total Wager Required: <span class="highlight">$${new Intl.NumberFormat(
+              "en-US"
+            ).format(neededAmount)}</span></p>
+          </div>
+        `;
+        resultContainer.classList.add("show");
+      }
+
+      // Update progress bar width based on value
+      function updateProgressBar(value) {
+        const progressBar = document.getElementById("progressBar");
+        value = Math.min(100, Math.max(0, parseFloat(value) || 0));
+        progressBar.style.width = value + "%";
+      }
+
+      // Trigger confetti effect
+      function triggerConfetti() {
+        confetti({
+          particleCount: 50,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#3b82f6", "#4a148c", "#7b1fa2", "#9c27b0"],
+          disableForReducedMotion: true,
+        });
+      }
+
+      // Trigger celebration confetti effect
+      function triggerCelebration() {
+        const duration = 2000;
+        const end = Date.now() + duration;
+        const colors = ["#ff0000", "#ffd700", "#00ff00", "#0000ff", "#ff00ff"];
+
+        (function frame() {
+          confetti({
+            particleCount: 7,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: colors,
+            shapes: ["square", "circle"],
+            gravity: 1.2,
+            scalar: 1.2,
+            drift: 0,
+            ticks: 200,
+          });
+
+          confetti({
+            particleCount: 7,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: colors,
+            shapes: ["square", "circle"],
+            gravity: 1.2,
+            scalar: 1.2,
+            drift: 0,
+            ticks: 200,
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        })();
+
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: colors,
+          disableForReducedMotion: true,
+        });
+      }
+
+      // Theme toggle function
+      function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      }
+
+      function updateThemeIcon(theme) {
+        const icon = document.querySelector(".theme-toggle i");
+        if (theme === "light") {
+          icon.className = "fas fa-moon";
+        } else {
+          icon.className = "fas fa-sun";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const vipProgressInput = document.getElementById("vipProgress");
+        const currentRankSelect = document.getElementById("current_rank");
+        const resultContainer = document.querySelector(".result-container");
+        const themeToggle = document.getElementById("themeToggle");
+
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        updateThemeIcon(savedTheme);
+
+        // Event listeners
+        vipProgressInput.addEventListener("input", function () {
+          let value = this.value;
+          if (value > 100) {
+            this.value = value.slice(0, -1);
+            value = this.value;
+          }
+          if (value < 0) {
+            this.value = 0;
+            value = 0;
+          }
+          value = parseFloat(value) || 0;
+          if (this.value.includes(".") && this.value.split(".")[1].length > 2) {
+            this.value = parseFloat(this.value).toFixed(2);
+            value = parseFloat(this.value);
+          }
+          updateProgressBar(value);
+          calculate();
+        });
+
+        currentRankSelect.addEventListener("change", calculate);
+        updateProgressBar(0);
+
+        // Progress bar drag functionality
+        const progressBarContainer = document.querySelector(
+          ".progress-bar-container"
+        );
+        const progressBar = document.querySelector(".progress-bar");
+        const input = document.getElementById("vipProgress");
+        let isDragging = false;
+
+        function handleDrag(e) {
+          if (!isDragging) return;
+          const rect = progressBarContainer.getBoundingClientRect();
+          const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+          const percentage = Math.round((x / rect.width) * 100);
+          updateProgressBar(percentage);
+          input.value = percentage;
+          calculate();
+        }
+
+        progressBarContainer.addEventListener("click", function (e) {
+          const rect = this.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const percentage = Math.round((x / rect.width) * 100);
+          updateProgressBar(percentage);
+          input.value = percentage;
+          calculate();
+        });
+
+        progressBarContainer.addEventListener("mousedown", () => {
+          isDragging = true;
+          progressBar.classList.add("dragging");
+        });
+
+        document.addEventListener("mousemove", handleDrag);
+        document.addEventListener("mouseup", () => {
+          isDragging = false;
+          progressBar.classList.remove("dragging");
+        });
+
+        progressBarContainer.addEventListener("touchstart", () => {
+          isDragging = true;
+          progressBar.classList.add("dragging");
+        });
+
+        progressBarContainer.addEventListener("touchmove", (e) => {
+          if (!isDragging) return;
+          const touch = e.touches[0];
+          const rect = progressBarContainer.getBoundingClientRect();
+          const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
+          const percentage = Math.round((x / rect.width) * 100);
+          updateProgressBar(percentage);
+          input.value = percentage;
+          calculate();
+          e.preventDefault();
+        });
+
+        document.addEventListener("touchend", () => {
+          isDragging = false;
+          progressBar.classList.remove("dragging");
+        });
+
+        resultContainer.classList.remove("show");
+
+        // Theme toggle event listener
+        themeToggle.addEventListener("click", toggleTheme);
+
+        // Set initial active state for Home and Calculator links
+        document
+          .querySelector(`.nav-menu a[href="#home"]`)
+          .classList.add("active");
+        document
+          .querySelector(`.nav-menu a[href="#calculator"]`)
+          .classList.add("active");
+      });
+    </script>
+  </body>
+</html>
